@@ -75,16 +75,16 @@ button:focus-visible {
   --bs-body-bg-rgb: 17,24,39 !important;
   --bs-secondary-bg: #0F1423 !important;
   --bs-secondary-bg-rgb: 15,20,35 !important;
-  /* --bs-secondary-bg: #17153B !important;
-  --bs-secondary-bg-rgb: 23,21,59 !important; */
-  --bs-tertiary-bg: #021526 !important;
-  --bs-tertiary-bg-rgb: 2,21,38 !important;
+  --bs-tertiary-bg: #111827 !important;
+  --bs-tertiary-bg-rgb: 17,24,39 !important;
+  /* --bs-tertiary-bg: #021526 !important;
+  --bs-tertiary-bg-rgb: 2,21,38 !important; */
 }
 
 .accordion {
   --bs-accordion-active-color: #fff !important;
-  --bs-accordion-active-bg: #83498c !important;
-  --bs-accordion-active-border-color: #83498c92 !important;
+  --bs-accordion-active-bg: #83498cb3 !important;
+  --bs-accordion-active-border-color: #83498cc6 !important;
   --bs-btn-focus-box-shadow: 0 0 0 0.25rem #83498c4e !important;
 }
 
@@ -98,9 +98,17 @@ button:focus-visible {
   --bs-btn-focus-box-shadow: 0 0 0 0.25rem #83498c4e !important;
 }
 
-#root {
+body{
   width: 100vw;
   height: 100vh;
+  padding: 0 !important;
+  margin: 0;
+  scrollbar-width: none; 
+}
+
+#root {
+  width: 100%;
+  height: 100%;
   padding: 0 !important;
   margin: 0;
   scrollbar-width: none;

@@ -2,7 +2,7 @@ import type { JenkinsJobDetail } from "./JenkinsJobModel";
 import type { TestSuites } from "./TestCaseModel";
 import type { TileProps } from "./TileProps";
 
-export const BASE_URL = "http://localhost:8090/api/jenkins";
+export const BASE_URL = "http://localhost:8090/api";
 
 // ----------- Types -----------
 
@@ -28,7 +28,7 @@ export interface ParameterDefinition {
  * Configure Jenkins server connection
  */
 export async function configureJenkins(config: JenkinsConfig): Promise<string> {
-  const response = await fetch(`${BASE_URL}/config`, {
+  const response = await fetch(`${BASE_URL}/configure`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(config),
@@ -88,7 +88,7 @@ export async function getJobDetails(
  * Trigger a Jenkins job without parameters
  */
 export async function triggerJob(jobName: string): Promise<boolean> {
-  const res = await fetch(`${BASE_URL}/jobs/trigger`, {
+  const res = await fetch(`${BASE_URL}/job/trigger`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -107,7 +107,7 @@ export async function triggerJobWithParams(
   jobName: string,
   parameters: Record<string, string>
 ): Promise<boolean> {
-  const res = await fetch(`${BASE_URL}/jobs/trigger`, {
+  const res = await fetch(`${BASE_URL}/job/trigger`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

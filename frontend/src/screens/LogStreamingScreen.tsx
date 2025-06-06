@@ -24,21 +24,13 @@ const LogStreamingScreen: React.FC = () => {
   const stageRegexMap = {
     clone: /clone|cloning/i,
     validate: /validate|Validating|Starting validation/i,
-
     compile: /compile|Compiling|Building modules|javac|scalac|tsc|babel/i,
-
     test: /test(?:ing)?|Running tests|Executing tests|Test suite|Results :|mocha|jest|pytest/i,
-
-    package:
-      /package|Packaging|Creating artifact|Generating jar|zip|tar|npm pack/i,
-
+    package: /package|Packaging|Creating artifact|Generating jar|zip|tar|npm pack/i,
     verify: /verify|Verifying|Verifications/i,
-
     install: /install|Installing artifact|mvn install|Artifact installed/i,
     build: /build|building/i,
-
-    deploy:
-      /deploy|Deploying|Uploading|Pushing|mvn deploy|Deploying to repository/i,
+    deploy: /deploy|Deploying|Uploading|Pushing|mvn deploy|Deploying to repository/i,
   };
 
   useEffect(() => {

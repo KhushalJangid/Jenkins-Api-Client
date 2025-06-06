@@ -92,7 +92,7 @@ export default function JobDetailScreen() {
           <p>No recent builds available.</p>
         )}
       </div>
-      <div className="w-60 d-flex flex-column p-5 mt-5">
+      <div className="w-60 d-flex flex-column p-5 mt-5 overflow-auto scrollbar-thin">
         <h3 className="my-4">Name: {job?.name}</h3>
         <p>{job?.description || "No description available."}</p>
 

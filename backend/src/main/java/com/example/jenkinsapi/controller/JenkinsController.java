@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @RestController
-@RequestMapping("/api/jenkins")
+@RequestMapping("/api")
 @CrossOrigin(origins = "http://localhost:5173")
 public class JenkinsController {
 
@@ -28,7 +28,7 @@ public class JenkinsController {
     @Autowired
     private JenkinsClient client;
 
-    @PostMapping("/config")
+    @PostMapping("/configure")
     public ResponseEntity<?> configure(@RequestBody JenkinsConfig config) throws Exception {
         boolean status = client.configure(config.getUrl(), config.getUsername(), config.getApiToken());
         if (status) {
@@ -56,7 +56,7 @@ public class JenkinsController {
         }
     }
 
-    @PostMapping("/jobs/trigger")
+    @PostMapping("/job/trigger")
     public ResponseEntity<?> triggerJob(@RequestBody BuildRequest request) throws Exception {
         if (request.getParameters() == null || request.getParameters().isEmpty()) {
             client.triggerJob(request.getJob());
