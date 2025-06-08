@@ -38,6 +38,7 @@ const JobParameterForm: React.FC<Props> = (props) => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
+    // console.log(TestCaseSelection)
     e.preventDefault();
     var res;
     var jobPath = decodeURIComponent(

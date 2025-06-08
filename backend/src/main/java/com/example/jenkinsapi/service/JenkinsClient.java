@@ -5,6 +5,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
+
+import org.springframework.http.ResponseEntity;
 //import org.springframework.http.HttpHeaders;
 //import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -29,6 +31,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -190,7 +194,7 @@ public class JenkinsClient {
 
         var xmlConfig = parseXmlConfig(jobPath);
         var stages = expandMavenStages(xmlConfig.buildStages);
-        String branch =  xmlConfig.scmBranch.split("/")[xmlConfig.scmBranch.split("/").length - 1];
+        String branch = xmlConfig.scmBranch.split("/")[xmlConfig.scmBranch.split("/").length - 1];
 
         Map<String, Object> result = new HashMap<>();
         result.put("name", jobData.get("name"));
@@ -199,7 +203,7 @@ public class JenkinsClient {
         result.put("isMavenJob", xmlConfig.isMavenJob);
         result.put("reportUrl", xmlConfig.reportUrl);
         result.put("scmUrl", xmlConfig.scmUrl);
-        result.put("scmBranch",branch);
+        result.put("scmBranch", branch);
         result.put("nextBuildNumber", jobData.get("nextBuildNumber"));
         result.put("buildable", jobData.get("buildable"));
         result.put("parameters", parameters);
@@ -236,6 +240,129 @@ public class JenkinsClient {
                 .POST(HttpRequest.BodyPublishers.ofString(form.toString())).build();
 
         client.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    public ResponseEntity<String> triggerTemporaryJob(String jobPath) {
+        try {
+            String configUrl = encodeJenkinsPath(jobPath, false) + "/config.xml";
+
+            // 1. GET original config
+            HttpRequest getConfigRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(configUrl))
+                    .header("Authorization", basicAuth())
+                    .GET()
+                    .build();
+            HttpResponse<String> originalConfig = client.send(getConfigRequest, HttpResponse.BodyHandlers.ofString());
+            if (originalConfig.statusCode() != 200) {
+                return ResponseEntity.status(originalConfig.statusCode())
+                        .body("Failed to fetch config.xml");
+            }
+
+            // 2. Modify it
+            String updatedConfig = injectParameterIfMissing(originalConfig.body());
+
+            // 3. POST updated config
+            HttpRequest updateConfigRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(configUrl))
+                    .header("Authorization", basicAuth())
+                    .header("Content-Type", "application/xml")
+                    .POST(HttpRequest.BodyPublishers.ofString(updatedConfig))
+                    .build();
+            client.send(updateConfigRequest, HttpResponse.BodyHandlers.discarding());
+
+            // 4. Trigger the build
+            // String triggerUrl = encodeJenkinsPath(jobPath, false) +
+            // "/buildWithParameters?suiteXmlFile=" + URLEncoder.encode(suitePath,
+            // StandardCharsets.UTF_8);
+            // HttpRequest triggerRequest = HttpRequest.newBuilder()
+            // .uri(URI.create(triggerUrl))
+            // .header("Authorization", basicAuth())
+            // .POST(HttpRequest.BodyPublishers.noBody())
+            // .build();
+            // HttpResponse<Void> triggerResponse = client.send(triggerRequest,
+            // HttpResponse.BodyHandlers.discarding());
+            triggerJobWithParams(updatedConfig, null);
+            ;
+
+            // 5. Schedule config restore
+            Executors.newSingleThreadScheduledExecutor().schedule(() -> {
+                try {
+                    HttpRequest restoreRequest = HttpRequest.newBuilder()
+                            .uri(URI.create(configUrl))
+                            .header("Authorization", basicAuth())
+                            .header("Content-Type", "application/xml")
+                            .POST(HttpRequest.BodyPublishers.ofString(originalConfig.body()))
+                            .build();
+                    client.send(restoreRequest, HttpResponse.BodyHandlers.discarding());
+                } catch (Exception e) {
+                    System.err.println("⚠️ Failed to restore config.xml: " + e.getMessage());
+                }
+            }, 30l, TimeUnit.SECONDS); // Wait 30 sec before restoring
+
+            // if (triggerResponse.statusCode() >= 200 && triggerResponse.statusCode() <
+            // 300) {
+            // return ResponseEntity.ok("Build triggered. Original config will be restored
+            // shortly.");
+            // } else {
+            // return ResponseEntity.status(triggerResponse.statusCode()).body("Build
+            // trigger failed");
+            // }
+            return ResponseEntity.ok("Build triggered. Original config will be restored shortly.");
+
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error: " + e.getMessage());
+        }
+    }
+    // private String buildTestNGXml(TestNGSuite suite) {
+    //     StringBuilder sb = new StringBuilder();
+    //     sb.append("<suite name=\"").append(suite.getName()).append("\" verbose=\"1\">\n");
+
+    //     for (TestNGTest test : suite.getTests()) {
+    //         sb.append("  <test name=\"").append(test.getName()).append("\">\n");
+
+    //         if (test.getParameters() != null) {
+    //             for (Map.Entry<String, String> param : test.getParameters().entrySet()) {
+    //                 sb.append("    <parameter name=\"")
+    //                   .append(param.getKey())
+    //                   .append("\" value=\"")
+    //                   .append(param.getValue())
+    //                   .append("\" />\n");
+    //             }
+    //         }
+
+    //         sb.append("    <classes>\n");
+    //         for (String clazz : test.getClasses()) {
+    //             sb.append("      <class name=\"").append(clazz).append("\" />\n");
+    //         }
+    //         sb.append("    </classes>\n");
+    //         sb.append("  </test>\n");
+    //     }
+
+    //     sb.append("</suite>\n");
+    //     return sb.toString();
+    // }
+
+    private String injectParameterIfMissing(String originalXml) {
+        if (originalXml.contains("<name>SUITE_PATH</name>")) {
+            return originalXml;
+        }
+
+        String paramDefBlock = "<hudson.model.ParametersDefinitionProperty>\n" +
+                "  <parameterDefinitions>\n" +
+                "    <hudson.model.StringParameterDefinition>\n" +
+                "      <name>SUITE_PATH</name>\n" +
+                "      <description>Path to custom testng suite file</description>\n" +
+                "      <defaultValue>testng.xml</defaultValue>\n" +
+                "    </hudson.model.StringParameterDefinition>\n" +
+                "  </parameterDefinitions>\n" +
+                "</hudson.model.ParametersDefinitionProperty>";
+
+        if (originalXml.contains("<properties/>")) {
+            return originalXml.replace("<properties/>", "<properties>" + paramDefBlock + "</properties>");
+        }
+
+        // Otherwise insert into <properties>...</properties>
+        return originalXml.replaceFirst("</properties>", paramDefBlock + "\n</properties>");
     }
 
     public boolean hasJobStarted(String jobName, String buildNumber) {
@@ -417,9 +544,8 @@ public class JenkinsClient {
                     jenkinsUrl + encodeJenkinsPath(jobPath, false) + "/" + reportName,
                     stages,
                     scmUrl,
-                    scmBranch, 
-                    isMavenJob
-                    );
+                    scmBranch,
+                    isMavenJob);
         } catch (Exception e) {
             System.err.println("Failed to parse config.xml for job " + jobPath + ": " + e.getMessage());
             return new XmlConfig("", List.of());

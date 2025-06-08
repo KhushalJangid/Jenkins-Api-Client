@@ -2,10 +2,7 @@ package com.example.jenkinsapi.controller;
 
 import com.example.jenkinsapi.model.*;
 import com.example.jenkinsapi.service.JenkinsClient;
-
-// import java.io.IOException;
 import java.util.HashMap;
-// import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -78,9 +75,7 @@ public class JenkinsController {
         sessionStore.put(sessionId,
                 Map.of(
                         "jobPath", request.getPath(),
-                        "buildNumber", Integer.toString(request.getBuildNumber())
-                )
-        ); // Store request temporarily
+                        "buildNumber", Integer.toString(request.getBuildNumber()))); // Store request temporarily
         return Map.of("sessionId", sessionId);
     }
 
@@ -97,13 +92,14 @@ public class JenkinsController {
     }
 
     @PostMapping("/testcases/list")
-    public Map<String, Map<String,Object>> getTestCases(@RequestBody ScmProvider request) {
+    public Map<String, Map<String, Object>> getTestCases(@RequestBody ScmProvider request) {
         Runner runner = new Runner();
         try {
-            Map<String, Map<String,Object>> results = runner.cloneAndScanRepo(request.getScmUrl(), request.getBranchName());
+            Map<String, Map<String, Object>> results = runner.cloneAndScanRepo(request.getScmUrl(),
+                    request.getBranchName());
             results.forEach((k, v) -> {
                 System.out.println("Suite Name: " + k);
-                v.forEach((y,z)-> {
+                v.forEach((y, z) -> {
                     System.out.println(y);
                     System.out.println(z);
                 });
@@ -114,4 +110,12 @@ public class JenkinsController {
             return new HashMap<>();
         }
     }
+
+    @PostMapping("/job/trigger/temp")
+    public ResponseEntity<String> triggerWithTemporaryConfig(
+            @RequestParam String jobName,
+            @RequestParam String suitePath) {
+        return client.triggerTemporaryJob(suitePath);
+    }
+
 }
