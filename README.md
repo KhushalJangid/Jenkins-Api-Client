@@ -42,17 +42,19 @@
 ## Features
 
 - **Jenkins Integration**: Connects to Jenkins using REST API and basic authentication.
+- **Simple UI/UX**: A simple and functional UI/UX with adaptive colour scheme
 - **Job Discovery**: Lists all jobs and folders recursively.
-- **Job Details**: Fetches job metadata, build history, parameters, and SCM info.
-- **Pipeline & Freestyle Analysis**: Parses config.xml to extract build stages, Maven usage, and SCM details.
+- **Job Details**: Fetches job metadata, build history, parameters, and Test Suites.
 - **Trigger Builds**: Start Jenkins jobs with or without parameters.
-- **Frontend**: Visualizes jobs, builds, and reports in a user-friendly UI.
+- **Trigger Custom Tests**: Start Jenkins jobs only selected test cases.
+- **Job Execution Monitoring**: Displays live logs from jenkins along with Maven Lifecycle stage tracking
+- **AI Chat Integration**: Integrated chat support for resolving issues in job execution
 
 ## Technologies
 
-- **Backend**: Java, Spring Boot, Jackson, Java HTTP Client
+- **Backend**: Java, Spring Boot, Java HTTP Client
 - **Frontend**: React, TypeScript, Bootstrap
-- **Build Tools**: Maven
+- **Build Tools**: Maven, Vite
 
 ## Requirements
 
