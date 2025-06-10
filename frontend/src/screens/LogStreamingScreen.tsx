@@ -6,6 +6,7 @@ import { BASE_URL, checkJobStarted, getConsoleLog, sleep } from "../models/Api";
 import { useLocation } from "react-router-dom";
 import BuildStage from "./../components/BuildStage";
 import CircularProgress from "@mui/joy/CircularProgress";
+import ChatScreen from "./ChatScreen";
 
 type LogStreamingProps = {
   buildNumber?: number;
@@ -16,6 +17,7 @@ const LogStreamingScreen: React.FC = () => {
   const [logs, setLogs] = useState<string[]>([]);
   const [currentStage, setCurrentStage] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
+  const [finished, setFinished] = useState<boolean>(false);
 
   const logEndRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
@@ -26,11 +28,13 @@ const LogStreamingScreen: React.FC = () => {
     validate: /validate|Validating|Starting validation/i,
     compile: /compile|Compiling|Building modules|javac|scalac|tsc|babel/i,
     test: /test(?:ing)?|Running tests|Executing tests|Test suite|Results :|mocha|jest|pytest/i,
-    package: /package|Packaging|Creating artifact|Generating jar|zip|tar|npm pack/i,
+    package:
+      /package|Packaging|Creating artifact|Generating jar|zip|tar|npm pack/i,
     verify: /verify|Verifying|Verifications/i,
     install: /install|Installing artifact|mvn install|Artifact installed/i,
     build: /build|building/i,
-    deploy: /deploy|Deploying|Uploading|Pushing|mvn deploy|Deploying to repository/i,
+    deploy:
+      /deploy|Deploying|Uploading|Pushing|mvn deploy|Deploying to repository/i,
   };
 
   useEffect(() => {
@@ -66,6 +70,9 @@ const LogStreamingScreen: React.FC = () => {
                 break;
               }
             }
+          }
+          if(eventSource.readyState == eventSource.CLOSED){
+            setFinished(true);
           }
         };
 
@@ -107,34 +114,44 @@ const LogStreamingScreen: React.FC = () => {
         <TopNav />
         <div className="w-25 d-flex flex-column p-5">
           {props.buildStages.map((stage, index) => {
-            let currentIndex = props.buildStages.indexOf(currentStage);
-            if (index < currentIndex) {
+            if (!finished) {
+              let currentIndex = props.buildStages.indexOf(currentStage);
+              if (index < currentIndex) {
+                return (
+                  <BuildStage
+                    key={index}
+                    status="completed"
+                    name={
+                      stage.substring(0, 1).toUpperCase() + stage.substring(1)
+                    }
+                  />
+                );
+              } else if (index > currentIndex) {
+                return (
+                  <BuildStage
+                    key={index}
+                    status="pending"
+                    name={
+                      stage.substring(0, 1).toUpperCase() + stage.substring(1)
+                    }
+                  />
+                );
+              } else {
+                return (
+                  <BuildStage
+                    key={index}
+                    status="inprogress"
+                    name={
+                      stage.substring(0, 1).toUpperCase() + stage.substring(1)
+                    }
+                  />
+                );
+              }
+            } else {
               return (
                 <BuildStage
                   key={index}
                   status="completed"
-                  name={
-                    stage.substring(0, 1).toUpperCase() + stage.substring(1)
-                  }
-                />
-              );
-            }
-            else if (index > currentIndex) {
-              return (
-                <BuildStage
-                  key={index}
-                  status="pending"
-                  name={
-                    stage.substring(0, 1).toUpperCase() + stage.substring(1)
-                  }
-                />
-              );
-            }
-            else {
-              return (
-                <BuildStage
-                  key={index}
-                  status="inprogress"
                   name={
                     stage.substring(0, 1).toUpperCase() + stage.substring(1)
                   }
@@ -166,6 +183,7 @@ const LogStreamingScreen: React.FC = () => {
           ))}
           <div ref={logEndRef} />
         </div>
+        <ChatScreen/>
       </div>
     );
   }
