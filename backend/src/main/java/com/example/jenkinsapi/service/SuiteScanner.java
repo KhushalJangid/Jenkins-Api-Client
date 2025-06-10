@@ -19,7 +19,7 @@ public class SuiteScanner {
         for (File xml : suiteFiles) {
             try {
                 var result = parseTestNGSuite(xml);
-                var tc = (List) result.values().stream().findFirst().get().get("testCases");
+                var tc = (List<Map<String,String>>) result.values().stream().findFirst().get().get("testCases");
                 if (!tc.isEmpty()) {
                     testcases.putAll(result);
                 }

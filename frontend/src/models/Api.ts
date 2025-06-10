@@ -121,9 +121,37 @@ export async function triggerJobWithParams(
 }
 
 /**
+ * Trigger a Jenkins job with parameters
+ */
+export async function triggerTemporarySuite(
+  jobName: string,
+  parameters: Record<string, string>,
+  suite: {}
+): Promise<boolean> {
+  const res = await fetch(`${BASE_URL}/job/trigger/temp`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      job: jobName,
+      parameters: parameters,
+      suite: suite,
+    }),
+  });
+
+  if (!res.ok)
+    throw new Error(`Failed to trigger job with parameters: ${jobName}`);
+  return true;
+}
+
+/**
  * Fetch the console output for a specific build
  */
-export async function getConsoleLog(jobPath: string,buildNumber: number): Promise<string> {
+export async function getConsoleLog(
+  jobPath: string,
+  buildNumber: number
+): Promise<string> {
   const response = await fetch(`${BASE_URL}/logs/session`, {
     method: "POST",
     headers: {
@@ -137,7 +165,10 @@ export async function getConsoleLog(jobPath: string,buildNumber: number): Promis
   const { sessionId } = await response.json();
   return sessionId;
 }
-export async function checkJobStarted(jobPath: string,buildNumber: number): Promise<boolean> {
+export async function checkJobStarted(
+  jobPath: string,
+  buildNumber: number
+): Promise<boolean> {
   const response = await fetch(`${BASE_URL}/logs/status`, {
     method: "POST",
     headers: {
@@ -154,7 +185,8 @@ export async function checkJobStarted(jobPath: string,buildNumber: number): Prom
 }
 
 export async function getTestCases(
-  remoteUrl: string,branchName: string,
+  remoteUrl: string,
+  branchName: string
 ): Promise<TestSuites> {
   const res = await fetch(`${BASE_URL}/testcases/list`, {
     method: "POST",
@@ -171,5 +203,5 @@ export async function getTestCases(
 }
 
 export function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }

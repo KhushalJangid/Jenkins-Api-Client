@@ -112,10 +112,10 @@ public class JenkinsController {
     }
 
     @PostMapping("/job/trigger/temp")
-    public ResponseEntity<String> triggerWithTemporaryConfig(
-            @RequestParam String jobName,
-            @RequestParam String suitePath) {
-        return client.triggerTemporaryJob(suitePath);
+    public ResponseEntity<?> triggerWithTemporaryConfig(@RequestBody BuildRequest request) throws Exception {
+        client.triggerTemporaryJob(request.getJob(), request.getParameters(), request.getSuite());
+        System.out.println("job " + request.getJob() + " Triggered");
+        return ResponseEntity.ok("Triggered.");
     }
 
 }

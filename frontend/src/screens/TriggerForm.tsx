@@ -1,10 +1,11 @@
-// JobParameterForm.tsx
-
 import React, { useState } from "react";
-import { triggerJob, triggerJobWithParams } from "../models/Api";
+import {
+  triggerJob,
+  triggerJobWithParams,
+  triggerTemporarySuite,
+} from "../models/Api";
 import { useLocation, useNavigate } from "react-router-dom";
 import TestCaseSelection from "./TestCaseSelection";
-// import CircularProgress from "@mui/joy/CircularProgress/CircularProgress";
 
 interface JenkinsParameter {
   name: string;
@@ -30,24 +31,52 @@ const JobParameterForm: React.FC<Props> = (props) => {
     props.parameters.map((p) => [p.name, p.defaultParameterValue?.value ?? ""])
   );
   const [formData, setFormData] = useState<Record<string, any>>(initialState);
+  const [selectedSuites, setSelectedSuites] = useState<{
+    [testcase: string]: boolean;
+  }>({});
+  const [suiteParameters, setSuiteParameters] = useState({});
   const navigate = useNavigate();
   const location = useLocation();
+
+  const updateSuiteSelection = (checked: boolean, tc: string) => {
+    selectedSuites[tc] = checked;
+    setSelectedSuites(selectedSuites);
+    console.log(selectedSuites);
+  };
 
   const handleChange = (name: string, value: any) => {
     setFormData({ ...formData, [name]: value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    // console.log(TestCaseSelection)
+    console.log(selectedSuites);
     e.preventDefault();
     var res;
     var jobPath = decodeURIComponent(
       location.pathname.replace(/^\/job\/?/, "")
     );
-    if (props.parameters.length === 0) {
-      res = await triggerJob(jobPath);
+    let customSuite = Object.values(selectedSuites).reduce(
+      (a, item) => a + (item === true ? 1 : 0),
+      0
+    );
+    if (customSuite === 0) {
+      if (props.parameters.length === 0) {
+        res = await triggerJob(jobPath);
+      } else {
+        res = await triggerJobWithParams(jobPath, formData);
+      }
     } else {
-      res = await triggerJobWithParams(jobPath, formData);
+      let classes = [];
+      Object.keys;
+      for (let [key, value] of Object.entries(selectedSuites)) {
+        if (value) {
+          classes.push(key);
+        }
+      }
+      res = await triggerTemporarySuite(jobPath, formData, {
+        parameters: suiteParameters,
+        classes: classes,
+      });
     }
     if (res) {
       const path = decodeURIComponent(
@@ -120,6 +149,9 @@ const JobParameterForm: React.FC<Props> = (props) => {
         <TestCaseSelection
           scmUrl={props.scmUrl || ""}
           scmBranch={props.scmBranch || "main"}
+          updateSuiteSelection={updateSuiteSelection}
+          setParameters={setSuiteParameters}
+          // selectedSuites={selectedSuites}
         />
       )}
 

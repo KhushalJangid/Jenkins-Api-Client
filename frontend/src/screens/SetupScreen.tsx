@@ -43,11 +43,19 @@ export default function Setup() {
         setConfigured(true);
         toast.success("Configuration successful!");
         try {
-          const folderList = await getJobs("");
-          folderList.filter((val) => {
-            return val.isFolder;
-          });
-          setFolders(folderList);
+          let jobList = await getJobs("");
+          let folderList: TileProps[] = [];
+          for (let i = 0; i < jobList.length; i++) {
+            if (jobList[i].isFolder) {
+              folderList.push(jobList[i]);
+            }
+          }
+          if (folderList.length != 0) {
+            setFolders(folderList);
+          } else {
+            localStorage.setItem("selectedFolder", "");
+            navigate(`/folder/${selectedFolder}`);
+          }
         } catch (err) {
           console.error(err);
           toast.error("Failed to fetch Jenkins jobs.");

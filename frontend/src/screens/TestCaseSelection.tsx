@@ -1,16 +1,6 @@
-// import { SettingsEdit } from "@carbon/icons-react};
-// import { FormControlLabel, Switch } from "@mui/material";
 import { useEffect, useState } from "react";
 import type { TestSuites } from "../models/TestCaseModel";
 import { getTestCases } from "../models/Api";
-
-// import { Accordion, AccordionTab } from "primereact/accordion";
-// import { MultiSelect } from "primereact/multiselect";
-import "primereact/resources/themes/bootstrap4-dark-purple/theme.css";
-// import "primereact/resources/themes/bootstrap4-light-purple/theme.css";
-// import 'primereact/resources/primereact.min.css';
-
-// import { TestSuite } from "./../models/TestCaseModel";
 import { CircularProgress, Switch } from "@mui/joy";
 import Accordion from "react-bootstrap/esm/Accordion";
 import { FormControlLabel } from "@mui/material";
@@ -18,20 +8,30 @@ import { FormControlLabel } from "@mui/material";
 export default function TestCaseSelection(props: {
   scmUrl: string;
   scmBranch: string;
+  // selectedSuites: { [testCase: string]: boolean };
+  updateSuiteSelection: Function;
+  setParameters: Function;
 }) {
-  // const [selectedSuites, setSelectedSuites] = useState(null);
-  // const [selectedSuites, setSelectedSuites] = useState(null);
+  const [selectedSuiteCount, setSelectedSuiteCount] = useState(0);
   const [enabled, setEnabled] = useState(false);
   const [testSuites, setTestSuites] = useState<TestSuites>();
   const [loading, setLoading] = useState(true);
+
+  const [formData, setFormData] = useState<Record<string, any>>();
 
   useEffect(() => {
     if (!enabled) return;
     setLoading(true);
     const fetchData = async () => {
-      var ts = await getTestCases(props.scmUrl, props.scmBranch);
-      console.log("TestSuites", ts);
+      const ts = await getTestCases(props.scmUrl, props.scmBranch);
       setTestSuites(ts);
+      let parameters = {};
+      for (let i = 0; i < Object.values(ts).length; i++) {
+        parameters = { ...parameters, ...Object.values(ts)[i].parameters };
+      }
+      console.log(parameters);
+      props.setParameters(parameters);
+      setFormData(parameters);
       setLoading(false);
     };
     fetchData();
@@ -41,11 +41,11 @@ export default function TestCaseSelection(props: {
     return (
       <div className="d-flex flex-column gap-3 justify-content-center align-items-center w-100 h-100">
         <div className="d-flex align-items-center mb-4">
-          <h3 className="mb-0 me-3">TestSuites</h3>
-          <FormControlLabel
-            control={<Switch checked={enabled} onChange={e => setEnabled(e.target.checked)} />}
-            label="Enable"
+          <Switch
+            checked={enabled}
+            onChange={(e) => setEnabled(e.target.checked)}
           />
+          <h3 className="mb-0 mx-3">TestSuites</h3>
         </div>
       </div>
     );
@@ -55,11 +55,11 @@ export default function TestCaseSelection(props: {
     return (
       <div className="d-flex flex-column gap-3 justify-content-center align-items-center w-100 h-100">
         <div className="d-flex align-items-center mb-4">
-          <h3 className="mb-0 me-3">TestSuites</h3>
-          <FormControlLabel
-            control={<Switch checked={enabled} onChange={e => setEnabled(e.target.checked)} />}
-            label="Enable"
+          <Switch
+            checked={enabled}
+            onChange={(e) => setEnabled(e.target.checked)}
           />
+          <h3 className="mb-0 mx-3">TestSuites</h3>
         </div>
         <CircularProgress />
         <h4>Loading TestSuites...</h4>
@@ -70,12 +70,15 @@ export default function TestCaseSelection(props: {
   return (
     <>
       <div className="d-flex align-items-center mb-4">
-        <h3 className="mb-0 me-3">TestSuites</h3>
-        <FormControlLabel
-          control={<Switch checked={enabled} onChange={e => setEnabled(e.target.checked)} />}
-          label="Enable"
+        <Switch
+          checked={enabled}
+          onChange={(e) => setEnabled(e.target.checked)}
         />
+        <h3 className="mb-0 mx-3">TestSuites</h3>
       </div>
+      {testSuites && (
+        <div className="my-2">{selectedSuiteCount} TestCase(s) selected</div>
+      )}
       <Accordion className="w-75">
         {testSuites &&
           Object.entries(testSuites).map(([suiteName, suite], index) => (
@@ -84,53 +87,56 @@ export default function TestCaseSelection(props: {
               <Accordion.Body>
                 <p>Suite Parameters</p>
                 {Object.entries(suite.parameters).map(
-                  ([name, value], index) => (
-                    <div key={index} className="mb-3 d-flex gap-5">
-                      <label className="form-label">
-                        {name.substring(0, 1).toUpperCase() + name.substring(1)}
-                      </label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={value}
-                        onChange={(e) => console.log(e)}
-                      />
-                    </div>
-                  )
+                  ([name, _], index) => {
+                    return (
+                      <div key={index} className="mb-3 d-flex gap-5">
+                        <label className="form-label">
+                          {name.substring(0, 1).toUpperCase() +
+                            name.substring(1)}
+                        </label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={formData ? formData[name] : ""}
+                          // onChange={(e) => console.log(e)}
+                          onChange={(e) => {
+                            let updatedData = {
+                              ...formData,
+                              [name]: e.target.value,
+                            };
+                            props.setParameters(updatedData);
+                            setFormData(updatedData);
+                          }}
+                        />
+                      </div>
+                    );
+                  }
                 )}
-
-                {/* <MultiSelect
-                  value={selectedSuites}
-                  onChange={(e) => setSelectedSuites(e.value)}
-                  options={suite.testCases}
-                  optionLabel="className"
-                  display="chip"
-                  placeholder="Select TestCases"
-                  maxSelectedLabels={3}
-                  className="w-100 md:w-20rem"
-                /> */}
-                {/* <select
-                  className="form-select"
-                  multiple
-                  aria-label="multiple select example"
-                >
-                  {suite.testCases.map((testCase, index) => (
-                    <option key={index}>{testCase.className}</option>
-                  ))}
-                </select> */}
                 <div className="form-check form-switch">
                   {suite.testCases.map((testCase, index) => (
                     <div key={index}>
-                      <input
-                        className="form-check-input"
-                        type="checkbox"
-                        role="switch"
-                        id={testCase.className}
-                        key={index}
+                      <FormControlLabel
+                        className="gap-5"
+                        control={
+                          <Switch
+                            onChange={(e) => {
+                              props.updateSuiteSelection(
+                                e.target.checked,
+                                testCase.className
+                              );
+                              // props.selectedSuites[testCase.className] =
+                              //   e.target.checked;
+                              if (e.target.checked) {
+                                setSelectedSuiteCount(selectedSuiteCount + 1);
+                              } else {
+                                setSelectedSuiteCount(selectedSuiteCount - 1);
+                              }
+                              // console.log(props.selectedSuites);
+                            }}
+                          />
+                        }
+                        label={testCase.className}
                       />
-                      <label className="form-check-label" htmlFor={testCase.className}>
-                        {testCase.className}
-                      </label>
                     </div>
                   ))}
                 </div>
