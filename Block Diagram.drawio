@@ -1,0 +1,55 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/27.0.9 Chrome/134.0.6998.205 Electron/35.4.0 Safari/537.36" version="27.0.9">
+  <diagram name="Technical Architecture Diagram" id="technical-diagram">
+    <mxGraphModel dx="542" dy="389" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="3" value="Web UI" style="rounded=1;fillColor=#dae8fc;" parent="1" vertex="1">
+          <mxGeometry x="162" y="150" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="4" value="API Service" style="rounded=1;fillColor=#d5e8d4;" parent="1" vertex="1">
+          <mxGeometry x="332" y="150" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="6" value="Jenkins API" style="shape=cylinder;fillColor=#fff2cc;" parent="1" vertex="1">
+          <mxGeometry x="512" y="110" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="7" value="GitHub API" style="shape=cylinder;fillColor=#fff2cc;" parent="1" vertex="1">
+          <mxGeometry x="512" y="180" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="10" style="endArrow=block;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="SItwjMeuMG5GkUsHFt9P-18" target="3" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="132" y="240" as="sourcePoint" />
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="11" style="endArrow=block;" parent="1" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="283" y="180" as="sourcePoint" />
+            <mxPoint x="333" y="180" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="12" style="endArrow=block;" parent="1" source="4" target="6" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="13" style="endArrow=block;" parent="1" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="473" y="193.125" as="sourcePoint" />
+            <mxPoint x="513" y="200.625" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="14" style="endArrow=block;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="433" y="210" as="sourcePoint" />
+            <mxPoint x="513" y="290" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="SItwjMeuMG5GkUsHFt9P-17" value="OGen AI APi" style="shape=cylinder;fillColor=#fff2cc;" vertex="1" parent="1">
+          <mxGeometry x="512" y="260" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="SItwjMeuMG5GkUsHFt9P-18" value="User" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#6d8764;fontColor=#ffffff;strokeColor=#3A5431;" vertex="1" parent="1">
+          <mxGeometry x="20" y="140" width="80" height="80" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
