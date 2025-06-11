@@ -1,3 +1,4 @@
+import type { Message } from "../screens/ChatScreen";
 import type { JenkinsJobDetail } from "./JenkinsJobModel";
 import type { TestSuites } from "./TestCaseModel";
 import type { TileProps } from "./TileProps";
@@ -200,6 +201,29 @@ export async function getTestCases(
   });
   if (!res.ok) throw new Error(`Failed to get details for repo: ${remoteUrl}`);
   return res.json();
+}
+
+export async function sendMessage(chatHistory: Message[]): Promise<string> {
+  const history = [];
+  for (let i = 0; i < chatHistory.length; i++) {
+    history.push({
+      role: chatHistory[i].sender,
+      parts: [{ text: chatHistory[i].text }],
+    });
+  }
+  const response = await fetch(`${BASE_URL}/chat`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      history: history,
+    }),
+  });
+  console.log("body ",chatHistory)
+  const res = await response.json();
+  console.log("chat response", res);
+  return response.status == 200 ? res:"No response";
 }
 
 export function sleep(ms: number): Promise<void> {

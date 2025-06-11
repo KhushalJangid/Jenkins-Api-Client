@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-
 import org.springframework.beans.factory.annotation.Autowired;
 // import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -116,6 +115,13 @@ public class JenkinsController {
         client.triggerTemporaryJob(request.getJob(), request.getParameters(), request.getSuite());
         System.out.println("job " + request.getJob() + " Triggered");
         return ResponseEntity.ok("Triggered.");
+    }
+
+    @PostMapping("/chat")
+    public ResponseEntity<String> chat(@RequestBody ChatRequest request) throws Exception {
+        System.out.println("Contents"+request.getHistory());
+        String response = client.chatHandler(request.getHistory());
+        return ResponseEntity.ok(response);
     }
 
 }

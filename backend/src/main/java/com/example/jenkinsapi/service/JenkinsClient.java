@@ -5,6 +5,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
+
+import org.apache.logging.log4j.message.Message;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import org.w3c.dom.Document;
@@ -36,6 +38,7 @@ public class JenkinsClient {
     private String jenkinsUrl;
     private String username;
     private String apiToken;
+    private String geminiApiKey;
     // private String crumb;
     private final ObjectMapper mapper = new ObjectMapper();
     private HttpClient client;
@@ -74,6 +77,7 @@ public class JenkinsClient {
                 this.jenkinsUrl = config.getUrl();
                 this.username = config.getUsername();
                 this.apiToken = config.getApiToken();
+                this.geminiApiKey = config.getGeminiApiKey();
             }
         } catch (Exception e) {
             System.err.println("Could not load config: " + e.getMessage());
@@ -248,6 +252,33 @@ public class JenkinsClient {
 
         triggerJobWithParams(jobPath, params);
 
+    }
+
+    public String chatHandler(List<Map<String, Object>> query) throws Exception {
+        final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key="
+                + geminiApiKey;
+        String requestBody = mapper.writeValueAsString(Map.of("contents",query));
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI(API_URL))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        // Parse the response
+        Map<String, Object> responseMap = mapper.readValue(response.body(), Map.class);
+        System.out.println(requestBody);
+        List<Map<String, Object>> candidates = (List<Map<String, Object>>) responseMap.get("candidates");
+        if (candidates != null && !candidates.isEmpty()) {
+            Map<String, Object> candidate = candidates.get(0);
+            Map<String, Object> content = (Map<String, Object>) candidate.get("content");
+            List<Map<String, String>> parts = (List<Map<String, String>>) content.get("parts");
+            return parts.get(0).get("text");
+        }
+
+        return "[No response from Gemini]";
     }
 
     public Path generateSuiteXml(Map<String, Object> testMap) throws IOException {
