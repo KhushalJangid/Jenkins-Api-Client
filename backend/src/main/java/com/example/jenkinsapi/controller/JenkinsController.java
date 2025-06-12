@@ -119,8 +119,8 @@ public class JenkinsController {
 
     @PostMapping("/chat")
     public ResponseEntity<String> chat(@RequestBody ChatRequest request) throws Exception {
-        System.out.println("Contents"+request.getHistory());
         String response = client.chatHandler(request.getHistory());
+        System.out.println(response);
         return ResponseEntity.ok(response);
     }
 

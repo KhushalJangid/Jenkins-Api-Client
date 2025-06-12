@@ -28,7 +28,7 @@ export default function ChatScreen() {
 
     const aiMessage: Message = {
       sender: "model",
-      text: await sendMessage(messages),
+      text: await sendMessage(newMsg),
     };
     setMessages((prev) => [...prev, aiMessage]);
     setLoading(false)

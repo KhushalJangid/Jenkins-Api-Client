@@ -5,8 +5,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
-
-import org.apache.logging.log4j.message.Message;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import org.w3c.dom.Document;
@@ -255,9 +253,9 @@ public class JenkinsClient {
     }
 
     public String chatHandler(List<Map<String, Object>> query) throws Exception {
-        final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key="
+        final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key="
                 + geminiApiKey;
-        String requestBody = mapper.writeValueAsString(Map.of("contents",query));
+        String requestBody = mapper.writeValueAsString(Map.of("contents", query));
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI(API_URL))
@@ -266,19 +264,26 @@ public class JenkinsClient {
                 .build();
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
         // Parse the response
+        @SuppressWarnings("unchecked")
         Map<String, Object> responseMap = mapper.readValue(response.body(), Map.class);
-        System.out.println(requestBody);
-        List<Map<String, Object>> candidates = (List<Map<String, Object>>) responseMap.get("candidates");
-        if (candidates != null && !candidates.isEmpty()) {
-            Map<String, Object> candidate = candidates.get(0);
-            Map<String, Object> content = (Map<String, Object>) candidate.get("content");
-            List<Map<String, String>> parts = (List<Map<String, String>>) content.get("parts");
-            return parts.get(0).get("text");
-        }
+        if (responseMap.containsKey("error")) {
+            System.err.println(responseMap);
+            throw new Exception("Error: unable to process the request");
+        } else {
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> candidates = (List<Map<String, Object>>) responseMap.get("candidates");
+            if (candidates != null && !candidates.isEmpty()) {
+                Map<String, Object> candidate = candidates.get(0);
+                @SuppressWarnings("unchecked")
+                Map<String, Object> content = (Map<String, Object>) candidate.get("content");
+                @SuppressWarnings("unchecked")
+                List<Map<String, String>> parts = (List<Map<String, String>>) content.get("parts");
+                return parts.get(0).get("text").trim();
+            }
 
-        return "[No response from Gemini]";
+            return "[No response from Gemini]";
+        }
     }
 
     public Path generateSuiteXml(Map<String, Object> testMap) throws IOException {
@@ -286,7 +291,9 @@ public class JenkinsClient {
         suite.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
         suite.append("<suite name=\"DynamicSuite\">\n");
 
+        @SuppressWarnings("unchecked")
         Map<String, String> parameters = (Map<String, String>) testMap.get("parameters");
+        @SuppressWarnings("unchecked")
         List<String> classes = (List<String>) testMap.get("classes");
 
         // for (Map.Entry<String, List<String>> entry : testMap.entrySet()) {
@@ -311,28 +318,28 @@ public class JenkinsClient {
         return suiteXmlPath;
     }
 
-    private String injectParameterIfMissing(String originalXml) {
-        if (originalXml.contains("<name>SUITE_PATH</name>")) {
-            return originalXml;
-        }
+    // private String injectParameterIfMissing(String originalXml) {
+    //     if (originalXml.contains("<name>SUITE_PATH</name>")) {
+    //         return originalXml;
+    //     }
 
-        String paramDefBlock = "<hudson.model.ParametersDefinitionProperty>\n" +
-                "  <parameterDefinitions>\n" +
-                "    <hudson.model.StringParameterDefinition>\n" +
-                "      <name>surefire.suiteXmlFiles</name>\n" +
-                "      <description>Path to custom testng suite file</description>\n" +
-                "      <defaultValue>testng.xml</defaultValue>\n" +
-                "    </hudson.model.StringParameterDefinition>\n" +
-                "  </parameterDefinitions>\n" +
-                "</hudson.model.ParametersDefinitionProperty>";
+    //     String paramDefBlock = "<hudson.model.ParametersDefinitionProperty>\n" +
+    //             "  <parameterDefinitions>\n" +
+    //             "    <hudson.model.StringParameterDefinition>\n" +
+    //             "      <name>surefire.suiteXmlFiles</name>\n" +
+    //             "      <description>Path to custom testng suite file</description>\n" +
+    //             "      <defaultValue>testng.xml</defaultValue>\n" +
+    //             "    </hudson.model.StringParameterDefinition>\n" +
+    //             "  </parameterDefinitions>\n" +
+    //             "</hudson.model.ParametersDefinitionProperty>";
 
-        if (originalXml.contains("<properties/>")) {
-            return originalXml.replace("<properties/>", "<properties>" + paramDefBlock + "</properties>");
-        }
+    //     if (originalXml.contains("<properties/>")) {
+    //         return originalXml.replace("<properties/>", "<properties>" + paramDefBlock + "</properties>");
+    //     }
 
-        // Otherwise insert into <properties>...</properties>
-        return originalXml.replaceFirst("</properties>", paramDefBlock + "\n</properties>");
-    }
+    //     // Otherwise insert into <properties>...</properties>
+    //     return originalXml.replaceFirst("</properties>", paramDefBlock + "\n</properties>");
+    // }
 
     public boolean hasJobStarted(String jobName, String buildNumber) {
         try {
@@ -377,9 +384,8 @@ public class JenkinsClient {
                 start = respHeaders.firstValue("x-text-size").isPresent() ? respHeaders.firstValue("x-text-size").get()
                         : "0";
                 moreData = respHeaders.firstValue("x-more-data").isPresent()
-                        || Boolean.parseBoolean(respHeaders.firstValue("x-more-data").get());
-                System.out.println(start);
-                System.out.println(moreData);
+                        ? Boolean.parseBoolean(respHeaders.firstValue("x-more-data").get())
+                        : false;
 
                 Thread.sleep(1000); // poll interval
             }

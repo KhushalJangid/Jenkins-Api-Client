@@ -220,8 +220,7 @@ export async function sendMessage(chatHistory: Message[]): Promise<string> {
       history: history,
     }),
   });
-  console.log("body ",chatHistory)
-  const res = await response.json();
+  const res = await response.text();
   console.log("chat response", res);
   return response.status == 200 ? res:"No response";
 }
