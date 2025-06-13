@@ -55,7 +55,7 @@ export default function FolderContentScreen() {
     <div className="d-flex w-100 h-100">
       <TopNav />
       <div className="d-flex flex-column align-items-center w-100 p-5">
-        <h2 className="my-5">Trigger a Jenkins Job</h2>
+        <h2 className="my-5">Browse Folders</h2>
         <div className="d-flex flex-column w-60">
           {jobs?.map((job, index) => (
             <Tile

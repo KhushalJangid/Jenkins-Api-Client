@@ -108,7 +108,7 @@ const LogStreamingScreen: React.FC = () => {
       <div
         className="d-flex w-100 h-100"
         style={{
-          marginTop: "4.5rem",
+          paddingTop: "4.5rem",
         }}
       >
         <TopNav />

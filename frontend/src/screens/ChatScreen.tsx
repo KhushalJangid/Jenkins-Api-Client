@@ -1,6 +1,7 @@
 import { CircularProgress } from "@mui/joy";
 import { useState, useRef, useEffect } from "react";
 import { sendMessage } from "../models/Api";
+import { SendAlt } from "@carbon/icons-react";
 
 export interface Message {
   sender: "user" | "model";
@@ -21,17 +22,16 @@ export default function ChatScreen() {
     if (!input.trim() || loading) return;
     setLoading(true);
     const userMessage: Message = { sender: "user", text: input };
-    let newMsg = [...messages, userMessage]
+    let newMsg = [...messages, userMessage];
     setMessages(newMsg);
     setInput("");
-    console.log("messages",messages);
 
     const aiMessage: Message = {
       sender: "model",
       text: await sendMessage(newMsg),
     };
     setMessages((prev) => [...prev, aiMessage]);
-    setLoading(false)
+    setLoading(false);
   };
 
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -42,16 +42,13 @@ export default function ChatScreen() {
 
   return (
     <div
-      className="d-flex flex-column align-items-center justify-content-center w-100 h-100 p-3 m-3"
-      style={{ minHeight: "80vh" }}
+      className="d-flex flex-column align-items-center justify-content-center h-100 m-3"
+      style={{ minHeight: "80vh", width: "40vw" }}
     >
       <div
-        className="bg-body border rounded p-3 mb-3 w-100"
+        className="bg-body border rounded p-3 mb-3 h-100 w-100"
         style={{
-          maxWidth: 600,
-          height: 400,
           overflowY: "auto",
-          background: "#f9f9f9",
         }}
       >
         {messages.length === 0 && (
@@ -94,7 +91,7 @@ export default function ChatScreen() {
           onClick={handleMessage}
           disabled={!input.trim() || loading}
         >
-          {loading ? <CircularProgress size="sm"/> : "Send"}
+          {loading ? <CircularProgress size="sm" /> : <SendAlt />}
         </button>
       </div>
     </div>
