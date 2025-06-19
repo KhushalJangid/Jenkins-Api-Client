@@ -3,7 +3,7 @@ import Navbar from 'react-bootstrap/Navbar';
 import ThemeToggle from './ThemeToggle';
 // import NavDropdown from 'react-bootstrap/NavDropdown';
 import BreadcrumbExample from './Crumbs';
-import { IbmZCloudModStack } from '@carbon/icons-react';
+import { IbmZCloudModStack, Logout } from '@carbon/icons-react';
 
 function TopNav() {
   return (
@@ -19,6 +19,7 @@ function TopNav() {
               <i className='bi bi-person mx-2'></i>
               {localStorage.getItem('jenkinsUsername') || 'Username'}
             </Nav.Link>
+             <Logout className="my-auto mx-3" role="button" size={20}  onClick={(e)=>localStorage.clear()}/>
              <ThemeToggle />
           </Nav>
         </Navbar.Collapse>

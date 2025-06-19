@@ -183,7 +183,7 @@ const LogStreamingScreen: React.FC = () => {
           ))}
           <div ref={logEndRef} />
         </div>
-        <ChatScreen/>
+        <ChatScreen logs={logs}/>
       </div>
     );
   }

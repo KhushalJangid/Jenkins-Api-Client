@@ -38,8 +38,6 @@ export default function Setup() {
     try {
       const response = await configureJenkins({ url, username, apiToken });
       if (response) {
-        // var folder = "";
-        // navigate(`/folder/${folder}`);
         setConfigured(true);
         toast.success("Configuration successful!");
         try {
@@ -51,7 +49,10 @@ export default function Setup() {
             }
           }
           if (folderList.length != 0) {
-            setFolders(folderList);
+            setFolders([
+              { name: "", type: "Folder", isFolder: true },
+              ...folderList,
+            ]);
           } else {
             localStorage.setItem("selectedFolder", "");
             navigate(`/folder/${selectedFolder}`);
@@ -130,11 +131,12 @@ export default function Setup() {
               id="folder"
               className="form-select w-75 mb-3"
               required
+              value={folders ? folders[0].name : ""}
               onChange={(e) => setSelectedFolder(e.target.value)}
             >
               {folders?.map((job, index) => (
                 <option key={index} value={job.name}>
-                  {job.name}
+                  {job.name !== ""? job.name: "Root Folder"}
                 </option>
               ))}
             </select>

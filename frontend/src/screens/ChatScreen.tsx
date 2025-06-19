@@ -7,8 +7,12 @@ export interface Message {
   sender: "user" | "model";
   text: string;
 }
+interface Props {
+  logs: string[];
+}
 
-export default function ChatScreen() {
+
+export default function ChatScreen(props:Props) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -46,8 +50,9 @@ export default function ChatScreen() {
       style={{ minHeight: "80vh", width: "40vw" }}
     >
       <div
-        className="bg-body border rounded p-3 mb-3 h-100 w-100"
+        className="bg-body border rounded p-3 mb-3 w-100"
         style={{
+          flexGrow: 1,
           overflowY: "auto",
         }}
       >
